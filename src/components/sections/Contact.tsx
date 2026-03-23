@@ -4,11 +4,34 @@ import { useState } from "react";
 
 export default function Contact() {
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [businessType, setBusinessType] = useState("");
+  const [websiteUrl, setWebsiteUrl] = useState("");
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    // TODO: wire up to email/CRM
-    setSubmitted(true);
+    setLoading(true);
+    setError("");
+
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, phone, email, businessType, websiteUrl }),
+      });
+
+      if (!res.ok) throw new Error("Failed to send");
+      setSubmitted(true);
+    } catch {
+      setError("Something went wrong. Please try again or call us directly.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -51,6 +74,8 @@ export default function Contact() {
                       type="text"
                       required
                       placeholder="Dave Smith"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
                       className="w-full bg-white/5 border border-white/20 text-white placeholder:text-white/20 px-4 py-3 focus:outline-none focus:border-[#faff00] transition-colors"
                     />
                   </div>
@@ -62,9 +87,25 @@ export default function Contact() {
                       type="tel"
                       required
                       placeholder="04xx xxx xxx"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
                       className="w-full bg-white/5 border border-white/20 text-white placeholder:text-white/20 px-4 py-3 focus:outline-none focus:border-[#faff00] transition-colors"
                     />
                   </div>
+                </div>
+
+                <div>
+                  <label className="block text-white/50 text-xs uppercase tracking-wide mb-2">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    placeholder="dave@example.com.au"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full bg-white/5 border border-white/20 text-white placeholder:text-white/20 px-4 py-3 focus:outline-none focus:border-[#faff00] transition-colors"
+                  />
                 </div>
 
                 <div>
@@ -73,7 +114,8 @@ export default function Contact() {
                   </label>
                   <select
                     required
-                    defaultValue=""
+                    value={businessType}
+                    onChange={(e) => setBusinessType(e.target.value)}
                     className="w-full bg-white/5 border border-white/20 text-white px-4 py-3 focus:outline-none focus:border-[#faff00] transition-colors appearance-none"
                   >
                     <option value="" disabled className="bg-[#0a0a0a]">
@@ -96,15 +138,22 @@ export default function Contact() {
                   <input
                     type="url"
                     placeholder="https://yoursite.com.au"
+                    value={websiteUrl}
+                    onChange={(e) => setWebsiteUrl(e.target.value)}
                     className="w-full bg-white/5 border border-white/20 text-white placeholder:text-white/20 px-4 py-3 focus:outline-none focus:border-[#faff00] transition-colors"
                   />
                 </div>
 
+                {error && (
+                  <p className="text-red-400 text-sm">{error}</p>
+                )}
+
                 <button
                   type="submit"
-                  className="w-full bg-[#faff00] text-black font-black text-lg py-4 uppercase tracking-wide hover:bg-white transition-colors mt-2"
+                  disabled={loading}
+                  className="w-full bg-[#faff00] text-black font-black text-lg py-4 uppercase tracking-wide hover:bg-white transition-colors mt-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Send Me My Free Audit →
+                  {loading ? "Sending..." : "Send Me My Free Audit →"}
                 </button>
 
                 <p className="text-white/30 text-xs text-center">
