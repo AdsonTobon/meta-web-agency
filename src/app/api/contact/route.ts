@@ -6,8 +6,12 @@ export async function POST(req: Request) {
   const resend = new Resend(process.env.RESEND_API_KEY);
   const { name, phone, email, businessType, websiteUrl } = await req.json();
 
+  const table = process.env.LEADS_TABLE ?? "leads";
+  const agencyEmail = "melbweb@protonmail.com";
+  const customerEmail = email;
+
   // Save lead to database
-  await getSupabase().from("leads").insert({
+  await getSupabase().from(table).insert({
     name,
     phone,
     email,
@@ -17,8 +21,8 @@ export async function POST(req: Request) {
 
   // Email to agency
   await resend.emails.send({
-    from: "onboarding@resend.dev",
-    to: "melbweb@protonmail.com",
+    from: "hello@buildsite.online",
+    to: agencyEmail,
     subject: `New Free Audit Request — ${name}`,
     html: `
       <h2>New Free Audit Request</h2>
@@ -34,8 +38,8 @@ export async function POST(req: Request) {
 
   // Confirmation email to customer
   await resend.emails.send({
-    from: "melbweb@protonmail.com",
-    to: email,
+    from: "hello@buildsite.online",
+    to: customerEmail,
     subject: "We received your audit request",
     html: `
       <p>Hi ${name},</p>
