@@ -1,6 +1,6 @@
 import { Resend } from "resend";
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { getSupabase } from "@/lib/supabase";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -8,7 +8,7 @@ export async function POST(req: Request) {
   const { name, phone, email, businessType, websiteUrl } = await req.json();
 
   // Save lead to database
-  await supabase.from("leads").insert({
+  await getSupabase().from("leads").insert({
     name,
     phone,
     email,
